@@ -1,0 +1,20 @@
+{
+  "name": "osu-quals-matchparser",
+  "version": "1.0.0",
+  "description": "Qualification parser for osu match page",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/N120F2/osu-quals-matchparser.git"
+  },
+  "author": "Uladzislau Sobal",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/N120F2/osu-quals-matchparser/issues"
+  },
+  "homepage": "https://github.com/N120F2/osu-quals-matchparser#readme"
+}
