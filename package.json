@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/N120F2/osu-quals-matchparser/issues"
   },
-  "homepage": "https://github.com/N120F2/osu-quals-matchparser#readme"
+  "homepage": "https://github.com/N120F2/osu-quals-matchparser#readme",
+  "dependencies": {
+    "node-html-parser": "^6.1.5"
+  }
 }
