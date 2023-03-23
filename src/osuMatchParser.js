@@ -3,11 +3,21 @@ const HTMLParser = require('node-html-parser');
 class OsuMatchParser {
 
     mode;
+    _mode_exemple = {//clear that
+        strictMPool: true,//count only mappool listed maps
+    }
     matchLinks;
+    mPool;
 
-    constructor(mode, mLinks) {
+    constructor(mode, mLinks, mPool) {
         this.mode = mode;
         this.matchLinks = mLinks;
+        if(mode.strictMPool){
+            if(!mPool) throw new Error();
+            this.mPool = mPool;
+        }else{
+            this.mPool = undefined
+        }
     }
     async parse() {
         let userMatches = [];
@@ -59,7 +69,8 @@ class OsuMatchParser {
                         }
                     };
                     for (let play of matchEventsPlays) {
-                        let thisGame = play.game;
+                        let thisGame = play.game;                        
+                        if (!this.checkBeatmap(thisGame.beatmap_id)) continue;
                         let score = {
                             beatmap_id: thisGame.beatmap_id,
                         };
@@ -78,11 +89,22 @@ class OsuMatchParser {
 
             } catch (e) {
                 console.error(e);
+                userMatches = -1
             }  
-        }
+        }        
         return userMatches
+    }
+    checkBeatmap(baetmapId){
+        if(this.mode.strictMPool ){
+            return this.mPool.includes(baetmapId)         
+        }else{
+            return true
+        }
+    }
+    utils = {
 
     }
+
 
 
 }
