@@ -10,8 +10,8 @@ class OsuMatchParser {
         this.matchLinks = mLinks;
     }
     async parse() {
+        let userMatches = [];
         for (let link of this.matchLinks) {
-            let userMatches = -1;
             try {
                 const response = await fetch(link, {
                     method: 'GET',
@@ -33,18 +33,31 @@ class OsuMatchParser {
                     return event.game !== undefined;
                 });
                 //console.log(matchEvents.length)
-                //console.log(matchEventsPlays.length)
-                userMatches = []
-                for (let user of matchUsers) {
-                    let userMatch = {
-                        user: {},
-                        scores: []
+                //console.log(matchEventsPlays.length)                
+                for (let user of matchUsers) { 
+                    //init obj
+                    let userMatch = {};  
+                    let alreadyExisting=false;                   
+                    //check for existing scoring
+                    let existingUserMatch = userMatches.find(function (userMatch) {
+                        return userMatch.user.id === user.id;
+                    });                    
+                    //for existing user match history replace userMatch for existing
+                    if(existingUserMatch){
+                        userMatch = existingUserMatch;
+                        alreadyExisting = true;
+                        console.log("existing user")
+                    }else{
+                        userMatch = {
+                            user: {},
+                            scores: []
+                        };
+                        userMatch.user = {
+                            id: user.id,
+                            username: user.username,
+                            avatar_url: user.avatar_url
+                        }
                     };
-                    userMatch.user = {
-                        id: user.id,
-                        username: user.username,
-                        avatar_url: user.avatar_url
-                    }
                     for (let play of matchEventsPlays) {
                         let thisGame = play.game;
                         let score = {
@@ -57,16 +70,17 @@ class OsuMatchParser {
                         score.mods = currentUserScore.mods;
                         userMatch.scores.push(score);
                     }
-                    userMatches.push(userMatch);
+                    if(!alreadyExisting){                       
+                        userMatches.push(userMatch);
+                    }                    
                 }
                 //console.log(userMatches[0].scores);
 
             } catch (e) {
                 console.error(e);
-            }
-            return userMatches
-
+            }  
         }
+        return userMatches
 
     }
 
