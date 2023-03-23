@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/N120F2/osu-quals-matchparser#readme",
   "dependencies": {
+    "dotenv": "^16.0.3",
     "node-html-parser": "^6.1.5"
   }
 }
