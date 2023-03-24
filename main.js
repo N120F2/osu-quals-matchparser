@@ -10,7 +10,7 @@ function main(){
     let osuMParser = new OsuMatchParser({strictMPool: true}, matchLinks, mappool);
     osuMParser.parse()
     .then((res)=>{
-        //console.log(res[0].scores); 
+        console.log(res); 
         console.log(osuMParser.allScores);     
         console.log('Program endeded')
     });   
