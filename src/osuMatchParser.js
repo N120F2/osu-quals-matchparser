@@ -5,6 +5,7 @@ class OsuMatchParser {
     mode;
     _mode_exemple = {//clear that
         strictMPool: true,//count only mappool listed maps
+        apiV1Key: "some_key"
     }
     matchLinks;
     mPool;
@@ -128,34 +129,30 @@ class OsuMatchParser {
                 }
                 const result = await response.json();
                 let matchGames = result.games;
-                for (let game of matchGames) {
-                    console.log("Game-")
+                for (let game of matchGames) {                  
                     if (!this.checkBeatmap(+game.beatmap_id)) continue;
-                    for (let score1 of game.scores) {
-                        console.log("   Score-")
+                    for (let score1 of game.scores) {                     
                         let score = {
                             beatmap_id: game.beatmap_id,
                             mods: game.mods,
                             scoreValue: score1.score
                         };
-                        console.log(score)
-                        let user = userMatches.find(function (match) {
-                            console.log(`user.id ${match.id} score1.user_id ${score1.user_id}`)
+                        //console.log(score)
+                        let user = userMatches.find(function (match) {                        
                             return match.user.id === score1.user_id;
                         })
-                        console.log(user)
-                        if (user) {
-                            console.log("       USER ex-")
+                        //console.log(user)
+                        if (user) {                        
                             //existing user
                             user.scores.push(score);
-                        } else {
-                            console.log("       USER new-")
+                        } else {                          
                             user = new UserMatch({
                                 id: score1.user_id,
                                 username: undefined,
                                 avatar_url: undefined,                               
                             });
                             user.scores.push(score);
+                            userMatches.push(user);
                         }
                         //creating all scores map
                         if (this.allScores[`${game.beatmap_id}`]) {
@@ -172,7 +169,7 @@ class OsuMatchParser {
 
                             }]
                         }
-                        userMatches.push(user);
+                        
 
                     }
                 }
