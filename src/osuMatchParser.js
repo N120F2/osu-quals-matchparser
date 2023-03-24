@@ -1,5 +1,5 @@
 const HTMLParser = require('node-html-parser');
-
+const UserMatch = require('./userMatch');
 class OsuMatchParser {
 
     mode;
@@ -13,10 +13,10 @@ class OsuMatchParser {
     constructor(mode, mLinks, mPool) {
         this.mode = mode;
         this.matchLinks = mLinks;
-        if(mode.strictMPool){
-            if(!mPool) throw new Error();
+        if (mode.strictMPool) {
+            if (!mPool) throw new Error();
             this.mPool = mPool;
-        }else{
+        } else {
             this.mPool = undefined
         }
     }
@@ -38,7 +38,7 @@ class OsuMatchParser {
                 var root = HTMLParser.parse(result);
                 let matchData = JSON.parse(root.querySelector('#json-events').rawText);
                 const matchEvents = matchData.events;//array
-                
+
                 const matchUsers = matchData.users;//array
                 this.matchUsers = matchUsers;
                 let matchEventsPlays = matchEvents.filter(function (event) {
@@ -47,87 +47,73 @@ class OsuMatchParser {
                 this.matchEventsPlays = matchEventsPlays;
                 //console.log(matchEvents.length)
                 //console.log(matchEventsPlays.length)                
-                for (let user of matchUsers) { 
+                for (let user of matchUsers) {
                     //init obj
-                    let userMatch = {};  
-                    let alreadyExisting=false;                   
+                    let userMatch;//= {};
+                    let alreadyExisting = false;
                     //check for existing scoring
                     let existingUserMatch = userMatches.find(function (userMatch) {
                         return userMatch.user.id === user.id;
-                    });                    
+                    });
                     //for existing user match history replace userMatch for existing
-                    if(existingUserMatch){
+                    if (existingUserMatch) {
                         userMatch = existingUserMatch;
-                        alreadyExisting = true;
-                        console.log("existing user")
-                    }else{
-                        userMatch = {
-                            user: {},
-                            scores: []
-                        };
-                        userMatch.user = {
+                        alreadyExisting = true;                       
+                    } else {
+                        userMatch = new UserMatch({
                             id: user.id,
                             username: user.username,
                             avatar_url: user.avatar_url
-                        }
+                        });                        
                     };
-                    console.log(`Current proccesing user: ${userMatch.user.id}`)
                     for (let play of matchEventsPlays) {
-                        let thisGame = play.game;                        
+                        let thisGame = play.game;
                         if (!this.checkBeatmap(thisGame.beatmap_id)) continue;
                         //creating user score
                         let score = {
                             beatmap_id: thisGame.beatmap_id,
                         };
-                        let currentUserScore = thisGame.scores.filter(function (score) {
+                        let currentUserScore = thisGame.scores.find(function (score) {
                             return score.user_id === userMatch.user.id;
-                        })[0];
+                        });
                         //if user not played this map
-                        if(!currentUserScore) continue;
+                        if (!currentUserScore) continue;
                         score.scoreValue = currentUserScore.score;
                         score.mods = currentUserScore.mods;
                         userMatch.scores.push(score);
                         //creating all scores map
-                        if(this.allScores[`${thisGame.beatmap_id}`]){
+                        if (this.allScores[`${thisGame.beatmap_id}`]) {
                             this.allScores[`${thisGame.beatmap_id}`].push({
                                 user_id: user.id,
                                 score: currentUserScore.score,
                                 mods: score.mods
                             })
-                        }else{
+                        } else {
                             this.allScores[`${thisGame.beatmap_id}`] = [{
                                 user_id: user.id,
                                 score: currentUserScore.score,
                                 mods: score.mods
 
                             }]
-                        }                       
+                        }
                     }
-                    if(!alreadyExisting){                       
+                    if (!alreadyExisting) {
                         userMatches.push(userMatch);
-                    }                    
+                    }
                 }
-                //console.log(userMatches[0].scores);
-
             } catch (e) {
                 console.error(e);
                 userMatches = -1
-            }  
-        }        
-        return userMatches
+            }
+        }       
+        return userMatches;
     }
-    checkBeatmap(baetmapId){
-        if(this.mode.strictMPool ){
-            return this.mPool.includes(baetmapId)         
-        }else{
+    checkBeatmap(baetmapId) {
+        if (this.mode.strictMPool) {
+            return this.mPool.includes(baetmapId)
+        } else {
             return true
         }
-    }
-    utils = {  
-
-    }
-
-
-
+    }    
 }
 module.exports = OsuMatchParser;
