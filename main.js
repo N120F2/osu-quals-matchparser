@@ -7,7 +7,7 @@ function main(){
     console.log("Math links: " + matchLinks);
 
     console.log("Program started");
-    let osuMParser = new OsuMatchParser({strictMPool: true}, matchLinks, mappool);
+    let osuMParser = new OsuMatchParser({strictMPool: true, apiV1Key:process.env.API_KEY}, matchLinks, mappool);
     osuMParser.parse()
     .then((res)=>{
         console.log(res); 

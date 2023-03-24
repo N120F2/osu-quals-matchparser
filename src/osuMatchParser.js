@@ -21,14 +21,21 @@ class OsuMatchParser {
         }
     }
     async parse() {
+
+        if (this.mode.apiV1Key) {
+            console.log("API MODE")
+            return await this.parseWithApi();
+        } else {
+            console.log("LINK MODE")
+            return await this.parseDefault();
+        }
+    }
+    async parseDefault() {
         let userMatches = [];
         for (let link of this.matchLinks) {
             try {
                 const response = await fetch(link, {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'text/html;charset=utf-8'
-                    },
                 });
                 if (!response.ok) {
                     throw new Error("HTTP status " + response.status);
@@ -58,13 +65,13 @@ class OsuMatchParser {
                     //for existing user match history replace userMatch for existing
                     if (existingUserMatch) {
                         userMatch = existingUserMatch;
-                        alreadyExisting = true;                       
+                        alreadyExisting = true;
                     } else {
                         userMatch = new UserMatch({
                             id: user.id,
                             username: user.username,
                             avatar_url: user.avatar_url
-                        });                        
+                        });
                     };
                     for (let play of matchEventsPlays) {
                         let thisGame = play.game;
@@ -105,7 +112,75 @@ class OsuMatchParser {
                 console.error(e);
                 userMatches = -1
             }
-        }       
+        }
+        return userMatches;
+    }
+    async parseWithApi() {
+        let userMatches = [];
+        for (let link of this.matchLinks) {
+            let matchID = link.split("/")[5]
+            try {
+                const response = await fetch(`https://osu.ppy.sh/api/get_match?k=${this.mode.apiV1Key}&mp=${matchID}`, {
+                    method: 'GET',
+                });
+                if (!response.ok) {
+                    throw new Error("HTTP status " + response.status);
+                }
+                const result = await response.json();
+                let matchGames = result.games;
+                for (let game of matchGames) {
+                    console.log("Game-")
+                    if (!this.checkBeatmap(+game.beatmap_id)) continue;
+                    for (let score1 of game.scores) {
+                        console.log("   Score-")
+                        let score = {
+                            beatmap_id: game.beatmap_id,
+                            mods: game.mods,
+                            scoreValue: score1.score
+                        };
+                        console.log(score)
+                        let user = userMatches.find(function (match) {
+                            console.log(`user.id ${match.id} score1.user_id ${score1.user_id}`)
+                            return match.user.id === score1.user_id;
+                        })
+                        console.log(user)
+                        if (user) {
+                            console.log("       USER ex-")
+                            //existing user
+                            user.scores.push(score);
+                        } else {
+                            console.log("       USER new-")
+                            user = new UserMatch({
+                                id: score1.user_id,
+                                username: undefined,
+                                avatar_url: undefined,                               
+                            });
+                            user.scores.push(score);
+                        }
+                        //creating all scores map
+                        if (this.allScores[`${game.beatmap_id}`]) {
+                            this.allScores[`${game.beatmap_id}`].push({
+                                user_id: score1.user_id,
+                                score: score1.score,
+                                mods: game.mods
+                            })
+                        } else {
+                            this.allScores[`${game.beatmap_id}`] = [{
+                                user_id: score1.user_id,
+                                score: score1.score,
+                                mods: game.mods
+
+                            }]
+                        }
+                        userMatches.push(user);
+
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+                userMatches = -1
+            }
+        }
         return userMatches;
     }
     checkBeatmap(baetmapId) {
@@ -114,6 +189,6 @@ class OsuMatchParser {
         } else {
             return true
         }
-    }    
+    }
 }
 module.exports = OsuMatchParser;
