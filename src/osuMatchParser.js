@@ -71,6 +71,7 @@ class OsuMatchParser {
                             avatar_url: user.avatar_url
                         }
                     };
+                    console.log(`Current proccesing user: ${userMatch.user.id}`)
                     for (let play of matchEventsPlays) {
                         let thisGame = play.game;                        
                         if (!this.checkBeatmap(thisGame.beatmap_id)) continue;
@@ -81,6 +82,8 @@ class OsuMatchParser {
                         let currentUserScore = thisGame.scores.filter(function (score) {
                             return score.user_id === userMatch.user.id;
                         })[0];
+                        //if user not played this map
+                        if(!currentUserScore) continue;
                         score.scoreValue = currentUserScore.score;
                         score.mods = currentUserScore.mods;
                         userMatch.scores.push(score);
