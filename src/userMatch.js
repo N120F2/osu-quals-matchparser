@@ -21,7 +21,7 @@ class UserMatch {
             if (typeof score.mods === "string") {
                 strMods = +score.mods == 1 ? "NF" : +score.mods == 9 ? "NFHD" : +score.mods == 17 ? "NFHR" : +score.mods == 65 ? "NFDT" : ""
             } else {
-                let strMods = score.mods.reduce(
+                strMods = score.mods.reduce(
                     (accumulator, currentValue) => accumulator + currentValue,
                     ""
                 );
@@ -32,6 +32,14 @@ class UserMatch {
         return scoresByMods
 
 
+    }
+    getStaticJson(){
+        let tempObj = {};
+        tempObj.scoresByMods = this.getScoresByMods();
+        for (let key in this) {
+            tempObj[key] = this[key];
+          }
+          return JSON.stringify(tempObj);
     }
 }
 module.exports = UserMatch;
