@@ -36,6 +36,10 @@ class UserMatch {
     getStaticJson(){
         let tempObj = {};
         tempObj.scoresByMods = this.getScoresByMods();
+        tempObj.overalScore = this.scores.reduce(
+            (accumulator, score) => accumulator + score.scoreValue,
+            0
+          );
         for (let key in this) {
             tempObj[key] = this[key];
           }
